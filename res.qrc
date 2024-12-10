@@ -1,0 +1,7 @@
+<RCC>
+    <qresource prefix="/icon"/>
+    <qresource prefix="/new/prefix1"/>
+    <qresource prefix="/">
+        <file>../../Desktop/background.jpg</file>
+    </qresource>
+</RCC>
