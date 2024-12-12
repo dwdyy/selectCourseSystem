@@ -47,7 +47,6 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->treeWidget,SIGNAL(itemClicked(QTreeWidgetItem*,int)),this,SLOT(onTreeitemClicked(QTreeWidgetItem*,int)));
     connect(&m_dlgLogin,&page_Login::sendLoginSuccess_m,&m_mannager,&mannager::Successlogmannager);
     ui->treeWidget->setColumnCount(1);
-
     QStringList pas1 ;
     pas1 << "课程管理";
     QTreeWidgetItem *p = new QTreeWidgetItem(ui->treeWidget,pas1);

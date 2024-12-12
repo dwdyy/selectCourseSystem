@@ -21,23 +21,6 @@ void MainWindow::closeEvent(QCloseEvent *event) {
 int main(int argc, char *argv[])
 {
     QApplication a(argc, argv);
-    //MainWindow w;
-    // std::fstream fData;
-    // std::string name;
-    // fData.open("./StudentData.txt", std::ios::in);
-    // QMessageBox msgBox1;
-    // msgBox1.setText("你好");
-    // int ret = msgBox1.exec();
-    // if(fData.is_open()){
-    //     msgBox1.exec();
-    //     while(!fData.eof()){
-    //         fData >> name;
-    //         QMessageBox msgBox;
-    //         msgBox.setText(QString(QString::fromLocal8Bit(name.data())));
-    //         int ret = msgBox.exec();
-    //     }
-    // }
-
     ReadFiles();
     MainWindow w;
     return a.exec();

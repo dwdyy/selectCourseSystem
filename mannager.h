@@ -25,6 +25,7 @@ private:
     void student_layout();
     void course_layout(std::string context );
     QString serarchConetxt;
+    void diaryLayout();
 public slots:
     void Successlogmannager();
 private slots:

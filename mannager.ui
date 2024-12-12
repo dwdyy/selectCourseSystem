@@ -178,6 +178,16 @@
        <string>修改</string>
       </property>
      </widget>
+     <widget class="QTableWidget" name="diaryTable">
+      <property name="geometry">
+       <rect>
+        <x>0</x>
+        <y>40</y>
+        <width>621</width>
+        <height>451</height>
+       </rect>
+      </property>
+     </widget>
     </widget>
     <widget class="QWidget" name="page_2"/>
    </widget>
@@ -308,7 +318,7 @@ background-color: rgb(245, 245, 245);</string>
      <x>0</x>
      <y>0</y>
      <width>800</width>
-     <height>26</height>
+     <height>18</height>
     </rect>
    </property>
   </widget>

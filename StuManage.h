@@ -1,6 +1,6 @@
 #include<string>
 #include<vector>
-
+ #pragma once
 // 用户类
 class User
 {

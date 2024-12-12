@@ -2,8 +2,9 @@
 #include "ui_mannager.h"
 #include <QInputDialog.h>
 #include <QFormLayout.h>
+#include <fielist.h>
 static const User *user;
-
+static myLinkedList diaryList;
 extern ManagerData managerData;
 extern StudentData studentData;
 extern CourseData courseData;
@@ -11,6 +12,9 @@ extern StudentCourseData scData;
 extern void SaveData();
 static StudentModuleTools studentTools;
 static ManagerModuleTools managerTools;
+
+
+
 mannager::mannager(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::mannager)
@@ -28,6 +32,9 @@ mannager::mannager(QWidget *parent)
     ui->searchEdit->hide();
     ui->modifyCourse->hide();
     ui->modifyStudent->hide();
+    ui->diaryTable->hide();
+
+    ui->diaryTable->horizontalHeader()->setStretchLastSection(true);
     // MainWindow::StudentSystem(studentTools, courseData, scData, temp);
     ui->courseTable->setSelectionMode(QAbstractItemView::SingleSelection);
     //设置选择行
@@ -47,8 +54,12 @@ mannager::mannager(QWidget *parent)
     pas1.clear();
     pas1 << "课程管理";
     QTreeWidgetItem *p3 = new QTreeWidgetItem(p,pas1);
+    pas1.clear();
+    pas1 << "操作日志";
+    QTreeWidgetItem *p4 = new QTreeWidgetItem(p,pas1);
     p->addChild(p3);
     p->addChild(p2);
+    p->addChild(p4);
 }
 
 void mannager::Successlogmannager(){
@@ -101,7 +112,7 @@ void mannager::course_layout(std::string context = ""){
     });
     for (size_t i = 0; i < temp.data.size(); i++)
     {
-       // qDebug() <<QString::fromLocal8Bit( temp.data[i].GetTeacherName() ) ;
+        // qDebug() <<QString::fromLocal8Bit( temp.data[i].GetTeacherName() ) ;
         if(temp.data[i].GetCourseNum().find(context) == std::string::npos && temp.data[i].GetCourseName().find(context) == std::string::npos && temp.data[i].GetTeacherName().find(context) == std::string::npos )
             continue;
         this->ui->courseTable->setItem(cnt,0,new QTableWidgetItem(QString::fromLocal8Bit(temp.data[i].GetCourseNum())));
@@ -130,6 +141,7 @@ void mannager::onTreeitemClicked(QTreeWidgetItem *item, int column){
         ui->searchEdit->hide();
         ui->modifyStudent->show();
         ui->modifyCourse->hide();
+        ui->diaryTable->hide();
     }
     else if(item->text(0) == "课程管理"){
         mannager::course_layout(std::string(mannager::serarchConetxt.toLocal8Bit()));
@@ -143,6 +155,23 @@ void mannager::onTreeitemClicked(QTreeWidgetItem *item, int column){
         ui->searchEdit->show();
         ui->modifyStudent->hide();
         ui->modifyCourse->show();
+        ui->diaryTable->hide();
+    }else {
+        if(item->text(0) == "操作日志"){
+            ui->courseTable->hide();
+            ui->acButton->hide();
+            ui->dcButton->hide();
+            ui->asButton->hide();
+            ui->dsButton->hide();
+            ui->studentTable->hide();
+            ui->serachButton->hide();
+            ui->searchEdit->hide();
+            ui->modifyStudent->hide();
+            ui->modifyCourse->hide();
+            diaryLayout();
+            ui->diaryTable->show();
+
+        }
     }
 }
 
@@ -189,7 +218,13 @@ void mannager::on_acButton_clicked()
         if(data1.empty() || data2.empty() || fields.at(2)->text().isEmpty() ||fields.at(3)->text().isEmpty() || data5.empty()){
             QMessageBox::warning(this,"Warning","内容不能为空");
         }else {
-        courseData.data.push_back(Course(data1, data2, data3, data4, 0, data5));
+            file_node* cur = new file_node();
+            cur->setTime(QDateTime::currentDateTime());
+            cur->setOpt(2);
+            cur->setAftCourse(Course(data1, data2, data3, data4, 0, data5));
+            diaryList.insertEnd(cur);
+            courseData.data.push_back(Course(data1, data2, data3, data4, 0, data5));
+
         }
     }
     course_layout();
@@ -243,6 +278,13 @@ void mannager::on_asButton_clicked()
         else {
             Student stemp(data1, data2, data3, data4, data5);
             StudentCourse sctemp(data1, data2, data3, data4);
+
+            file_node* cur = new file_node();
+            cur->setTime(QDateTime::currentDateTime());
+            cur->setOpt(2);
+            cur->setAftStudent(stemp);
+            diaryList.insertEnd(cur);
+
             studentData.data.push_back(stemp);
             scData.data.push_back(sctemp);
         }
@@ -259,6 +301,20 @@ void mannager::on_dsButton_clicked()
         return ;
     }
     QString text = items.at(2)->text(); //获取内容
+
+
+    file_node* cur = new file_node();
+    cur->setTime(QDateTime::currentDateTime());
+    cur->setOpt(1);
+    cur->setPreStudent(Student(
+        std::string(items.at(0)->text().toLocal8Bit()),
+        std::string(items.at(1)->text().toLocal8Bit()),
+        std::string(items.at(2)->text().toLocal8Bit()),
+        std::string(items.at(3)->text().toLocal8Bit()),
+        std::string(items.at(4)->text().toLocal8Bit())
+        ));
+    diaryList.insertEnd(cur);
+
     managerTools.Manage_Delete(studentData,scData,courseData,std::string(text.toLocal8Bit()));
     student_layout();
 }
@@ -272,6 +328,21 @@ void mannager::on_dcButton_clicked()
         return ;
     }
     QString text = items.at(0)->text(); //获取内容
+
+
+
+    file_node* cur = new file_node();
+    cur->setTime(QDateTime::currentDateTime());
+    cur->setOpt(0);
+    cur->setPreCourse(Course(
+        std::string(items.at(0)->text().toLocal8Bit()),
+        std::string(items.at(1)->text().toLocal8Bit()),
+        0,
+        ""
+        ));
+    diaryList.insertEnd(cur);
+
+
     managerTools.Manage_Delete(courseData,scData,std::string(text.toLocal8Bit()));
     course_layout(std::string(mannager::serarchConetxt.toLocal8Bit()));
 }
@@ -333,9 +404,17 @@ void mannager::on_modifyCourse_clicked()
         if(data1.empty() || data2.empty() || fields.at(2)->text().isEmpty() ||fields.at(3)->text().isEmpty() || data5.empty()){
             QMessageBox::warning(this,"Warning","内容不能为空");
         }else {
+
+
+
             Course temp = Course(data1, data2, data3, data4, items.at(4)->text().toInt(), data5);
             on_dcButton_clicked();
             courseData.data.push_back(temp);
+            file_node* cur = new file_node();
+            cur->setTime(QDateTime::currentDateTime());
+            cur->setOpt(5);
+            cur->setAftCourse(temp);
+            diaryList.insertEnd(cur);
         }
     }
     course_layout();
@@ -391,8 +470,52 @@ void mannager::on_modifyStudent_clicked()
             QString text = items.at(2)->text(); //获取内容
             managerTools.Manage_Delete_nonecourse(studentData,scData,courseData,std::string(text.toLocal8Bit()));
             studentData.data.push_back(stemp);
+
+            file_node* cur = new file_node();
+            cur->setTime(QDateTime::currentDateTime());
+            cur->setOpt(4);
+            cur->setAftStudent(stemp);
+            diaryList.insertEnd(cur);
         }
     }
     student_layout();
 }
 
+void mannager::diaryLayout(){
+    int cnt = 0 ;
+    for(auto cur = diaryList.getHead();;){
+        cnt ++ ;
+        if(cur ->isEnd()) break;
+        cur = cur->getLinkNext();
+    }
+    QStringList headers ;
+    headers << "时间" << "内容" ;
+    this->ui->diaryTable->setColumnCount(2);
+    this->ui->diaryTable->setRowCount(cnt-1);
+    this->ui->diaryTable->setHorizontalHeaderLabels(headers);
+    this->ui->diaryTable->setColumnWidth(0, 200);
+    cnt = 0 ;
+
+    for(auto cur = diaryList.getHead();;){
+
+        QString context;
+        if(cur->getOpt()==0)
+            context = "删除课程" + QString::fromLocal8Bit(cur->getPreCourse().GetCourseNum()) +"  " + QString::fromLocal8Bit(cur->getPreCourse().GetCourseName());
+        if(cur->getOpt()==1)
+            context = "删除学生" + QString::fromLocal8Bit(cur->getPreStudent().GetID()) + "  " + QString::fromLocal8Bit(cur->getPreStudent().GetName());
+        if(cur->getOpt()==2)
+            context = "添加课程" + QString::fromLocal8Bit(cur->getAftCourse().GetCourseNum()) + "  "+ QString::fromLocal8Bit(cur->getAftCourse().GetCourseName());
+        if(cur->getOpt()==3)
+            context = "添加学生" + QString::fromLocal8Bit(cur->getAftStudent().GetID()) + "  " + QString::fromLocal8Bit(cur->getAftStudent().GetName());
+        if(cur->getOpt()==4)
+            context = "修改学生" + QString::fromLocal8Bit(cur->getAftStudent().GetID()) + "  "+ QString::fromLocal8Bit(cur->getAftStudent().GetName());
+        if(cur->getOpt()==5)
+            context = "修改课程" + QString::fromLocal8Bit(cur->getAftCourse().GetCourseNum()) +"  " + QString::fromLocal8Bit(cur->getAftCourse().GetCourseName());
+        if(cnt!=0)this->ui->diaryTable->setItem(cnt-1,0,new QTableWidgetItem(cur->getTime().toString()));
+        if(cnt!=0)this->ui->diaryTable->setItem(cnt-1,1,new QTableWidgetItem(context));
+        if(cur ->isEnd()) break;
+        cur = cur->getLinkNext();
+        cnt ++ ;
+    }
+
+}
